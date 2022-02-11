@@ -1,24 +1,24 @@
 #include <PS4Controller.h>
+#include <ESP32Servo.h>
 
-// AUTHOR : GRECK Vincent
-// This code allow a robot to move thanks to funtions.
-// - - - - - - - - - - - - - - - - - - - - - - - - - 
+Servo esc;   // Création de l'objet permettant le contrôle de l'ESC
 
-// - - - - - - - - - - 
-//    MOTOR SECTION
-// - - - - - - - - - -
+int val = 0; // 
+
 //PWM and motor configuration
 // Motor A -> Left
 const int motor1Pin1 = 27;
 const int motor1Pin2 = 26;
 const int enable1Pin = 14;
-const int motor1channel = 0;
+const int motor1channel = 3;
 
 // Motor B -> Right
 const int motor2Pin1 = 25;
 const int motor2Pin2 = 33;
 const int enable2Pin = 12;
-const int motor2channel = 1;
+const int motor2channel = 4;
+
+const int weaponChannel = 2;
 
 // Setting PWM properties
 const int freq = 30000;
@@ -29,6 +29,7 @@ void setup() {
   Serial.begin(115200);
   PS4.begin("7e:03:72:85:07:7a");
   Serial.println("Ready.");
+  
 
   //Set motor pins as outputs
   pinMode(motor1Pin1, OUTPUT);
@@ -37,7 +38,10 @@ void setup() {
   pinMode(motor2Pin1, OUTPUT);
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
-
+  esc.attach(21); // On attache l'ESC au port numérique 9 (port PWM obligatoire)
+  delay(15);
+  Serial.begin(9600);
+  esc.write(90);
   ledcSetup(motor1channel, freq, resolution);
   ledcSetup(motor2channel, freq, resolution);
   //Configurate PWM for motors
@@ -56,7 +60,22 @@ void loop() {
     }
     if (PS4.Circle())
     {
-      Serial.println("Circle Button");
+      if ( val < 150) {
+      val = val + 1 ;   // lecture de la valeur passée par le port série
+      Serial.println(val);
+      esc.write(val); 
+      Serial.println("moteur tourne");// 
+      delay(15);
+      }else {
+        esc.write(val); 
+        Serial.println("moteur tourne");// 
+        delay(15);}
+        Serial.println("Circle Button");
+    }
+    if(PS4.Triangle()){
+      val = 90;
+      esc.write(val);
+      delay(20); 
     }
     
     // acceleration command
@@ -128,4 +147,24 @@ void controlMotorLeft(int motorDirection, int motorSpeed)
       digitalWrite(motor1Pin2,HIGH);
   }
     ledcWrite(motor1channel, motorSpeed);
+}
+
+void startWeaponMotor(int weaponValue )
+{
+  
+  if ( val < 150) {
+      val = val + 10 ;   // lecture de la valeur passée par le port série
+      Serial.println(val);
+      esc.write(val); 
+      Serial.println("moteur tourne");// 
+      delay(15);
+      }else {
+        esc.write(val); 
+        Serial.println("moteur tourne");// 
+        delay(15);}
+}
+
+void stopWeaponMotor(int stopValue)
+{
+ 
 }
